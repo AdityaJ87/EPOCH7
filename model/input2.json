@@ -1,0 +1,19 @@
+{
+    "TransactionAmt": 62.48,
+    "card1": 1077,
+    "card2": 270,
+    "addr1": 337,
+    "ProductCD_W": 1,
+    "ProductCD_C": 0,
+    "ProductCD_H": 0,
+    "P_emaildomain_gmail.com": 1,
+    "P_emaildomain_yahoo.com": 0,
+    "R_emaildomain_gmail.com": 0,
+    "R_emaildomain_yahoo.com": 1,
+    "DeviceType_mobile": 1,
+    "DeviceType_desktop": 0,
+    "DeviceInfo_iPhone": 1,
+    "DeviceInfo_Android": 0,
+    "V1": 0.13, 
+    "V2": 0.19
+}
