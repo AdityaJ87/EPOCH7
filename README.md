@@ -34,7 +34,6 @@ KurukShetra_Winners is a Human-in-the-Loop (HITL) AI Feedback System focused on 
 ### Prerequisites
 
 - Python 3.8+
-- See requirements.txt for Python dependencies (to be added if available).
 - PostgreSQL database recommended for feedback storage.
 
 ### Backend Startup
