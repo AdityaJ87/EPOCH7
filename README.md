@@ -1,8 +1,8 @@
-# KurukShetra_Winners
-
+# EPOCH7
+# Human In the Loop
 ## Project Overview
 
-KurukShetra_Winners is a Human-in-the-Loop (HITL) AI Feedback System focused on dynamic fraud detection. It combines advanced machine learning with human expertise to deliver high-accuracy, continuously improving predictions on transactional data.
+ Human-in-the-Loop (HITL) AI Feedback System focused on dynamic fraud detection. It combines advanced machine learning with human expertise to deliver high-accuracy, continuously improving predictions on transactional data.
 
 ## Repository Structure
 
