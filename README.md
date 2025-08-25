@@ -1,5 +1,5 @@
 # EPOCH7
-# Human In the Loop
+# Human-in-the-Loop Model Feedback System
 ## Project Overview
 
  Human-in-the-Loop (HITL) AI Feedback System focused on dynamic fraud detection. It combines advanced machine learning with human expertise to deliver high-accuracy, continuously improving predictions on transactional data.
