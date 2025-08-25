@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HITL Model Feedback Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .metric-change {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .fraud-alert {
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .alert-id {
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .confidence-score {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .transaction-details {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .detail-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-approve {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-reject {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+        }
+
+        .btn-review {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .model-performance {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .performance-metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .feedback-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .annotation-quality {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .quality-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .quality-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .quality-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .quality-needs-improvement {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .learning-suggestions {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .notification-badge {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+
+        .alert-priority {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .priority-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .priority-low {
+            background: #28a745;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Human-in-the-Loop Model Feedback Portal</h1>
+            <p>Continuous learning through human expertise • Real-time fraud detection & model improvement</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">Dashboard</button>
+            <button class="nav-tab" onclick="showTab('review')">Review Alerts</button>
+            <button class="nav-tab" onclick="showTab('performance')">Model Performance</button>
+            <button class="nav-tab" onclick="showTab('feedback')">Feedback History</button>
+            <button class="nav-tab" onclick="showTab('training')">Active Learning</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="card metric-card">
+                    <div class="metric-value" style="color: #dc3545;">42</div>
+                    <div class="metric-label">Pending Reviews</div>
+                    <div class="metric-change negative">↑ 8% from yesterday</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-value" style="color: #28a745;">94.7%</div>
+                    <div class="metric-label">Model Accuracy</div>
+                    <div class="metric-change positive">↑ 2.3% this week</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-value" style="color: #17a2b8;">1,247</div>
+                    <div class="metric-label">Reviews Completed</div>
+                    <div class="metric-change positive">↑ 156 today</div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-value" style="color: #ffc107;">87.2%</div>
+                    <div class="metric-label">Annotation Quality</div>
+                    <div class="metric-change positive">↑ 1.8% this month</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Recent High-Priority Alerts</h3>
+                    <div class="chart-container">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📊</div>
+                            <p>Real-time alert visualization would appear here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Model Retraining Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 73%;"></div>
+                    </div>
+                    <p><strong>73% Complete</strong> • Next deployment: Tomorrow 2:00 AM</p>
+                    <div class="stats-grid" style="margin-top: 20px;">
+                        <div class="stat-item">
+                            <div><strong>847</strong></div>
+                            <div>New Training Samples</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>12.3 hrs</strong></div>
+                            <div>Est. Training Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Alerts Tab -->
+        <div id="review" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card fraud-alert">
+                    <div class="alert-header">
+                        <div class="alert-id">Alert #FRD-2024-0847</div>
+                        <div class="confidence-score">95.7% Fraud Risk</div>
+                    </div>
+                    <div class="alert-priority priority-high">HIGH PRIORITY</div>
+                    
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Transaction Amount:</span>
+                            <span class="detail-value">$15,750.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Merchant:</span>
+                            <span class="detail-value">Online Electronics Store</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">Unknown (VPN Detected)</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Time:</span>
+                            <span class="detail-value">2024-08-25 03:42 AM</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Risk Factors:</span>
+                            <span class="detail-value">Unusual time, High amount, New merchant</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-approve" onclick="handleAlert('approve', 'FRD-2024-0847')">
+                            ✓ Approve Transaction
+                        </button>
+                        <button class="btn btn-reject" onclick="handleAlert('reject', 'FRD-2024-0847')">
+                            ✗ Block as Fraud
+                        </button>
+                        <button class="btn btn-review" onclick="handleAlert('review', 'FRD-2024-0847')">
+                            👁 Need More Info
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card fraud-alert">
+                    <div class="alert-header">
+                        <div class="alert-id">Alert #FRD-2024-0846</div>
+                        <div class="confidence-score">78.3% Fraud Risk</div>
+                    </div>
+                    <div class="alert-priority priority-medium">MEDIUM PRIORITY</div>
+                    
+                    <div class="transaction-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Transaction Amount:</span>
+                            <span class="detail-value">$2,450.00</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Merchant:</span>
+                            <span class="detail-value">Gas Station Chain</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">Highway Rest Stop, TX</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Time:</span>
+                            <span class="detail-value">2024-08-25 14:28 PM</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Risk Factors:</span>
+                            <span class="detail-value">Multiple transactions, Different state</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-approve" onclick="handleAlert('approve', 'FRD-2024-0846')">
+                            ✓ Approve Transaction
+                        </button>
+                        <button class="btn btn-reject" onclick="handleAlert('reject', 'FRD-2024-0846')">
+                            ✗ Block as Fraud
+                        </button>
+                        <button class="btn btn-review" onclick="handleAlert('review', 'FRD-2024-0846')">
+                            👁 Need More Info
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Performance Tab -->
+        <div id="performance" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card model-performance">
+                    <h3>Current Model Metrics</h3>
+                    <div class="performance-metric">
+                        <span>Precision:</span>
+                        <span><strong>92.4%</strong></span>
+                    </div>
+                    <div class="performance-metric">
+                        <span>Recall:</span>
+                        <span><strong>89.7%</strong></span>
+                    </div>
+                    <div class="performance-metric">
+                        <span>F1-Score:</span>
+                        <span><strong>91.0%</strong></span>
+                    </div>
+                    <div class="performance-metric">
+                        <span>False Positive Rate:</span>
+                        <span><strong>3.2%</strong></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Model Improvements Over Time</h3>
+                    <div class="chart-container">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📈</div>
+                            <p>Performance trend chart would be displayed here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Feature Importance</h3>
+                    <div class="chart-container">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">🔍</div>
+                            <p>Feature importance visualization</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Confusion Matrix</h3>
+                    <div class="chart-container">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 10px;">📊</div>
+                            <p>Confusion matrix heatmap</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback History Tab -->
+        <div id="feedback" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Recent Feedback Summary</h3>
+                    <div class="annotation-quality">
+                        <span>Your Annotation Quality:</span>
+                        <span class="quality-badge quality-excellent">Excellent (95.2%)</span>
+                    </div>
+                    
+                    <div class="feedback-form">
+                        <div class="form-group">
+                            <label class="form-label">Alert ID:</label>
+                            <input type="text" class="form-input" placeholder="FRD-2024-0847" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Your Decision:</label>
+                            <input type="text" class="form-input" placeholder="Approved - Legitimate transaction" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reasoning:</label>
+                            <textarea class="form-input form-textarea" readonly>Transaction pattern matches customer's previous behavior. Large purchase is consistent with customer's income level and shopping history.</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confidence Level:</label>
+                            <input type="text" class="form-input" placeholder="High (9/10)" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Feedback Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div><strong>1,247</strong></div>
+                            <div>Total Reviews</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>89.3%</strong></div>
+                            <div>Agreement Rate</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>156</strong></div>
+                            <div>Reviews Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>4.2 min</strong></div>
+                            <div>Avg Review Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Learning Tab -->
+        <div id="training" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card learning-suggestions">
+                    <h3>Active Learning Recommendations</h3>
+                    <div class="suggestion-item">
+                        <h4>High-Uncertainty Cases</h4>
+                        <p>47 transactions with confidence scores between 45-55% need expert review to improve model boundary decisions.</p>
+                    </div>
+                    <div class="suggestion-item">
+                        <h4>Diverse Sampling</h4>
+                        <p>Include more examples from underrepresented merchant categories: travel, entertainment, and subscription services.</p>
+                    </div>
+                    <div class="suggestion-item">
+                        <h4>Error Analysis</h4>
+                        <p>Recent false positives suggest model is over-sensitive to weekend transactions. Need 200+ weekend samples.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Training Data Quality</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 87%;"></div>
+                    </div>
+                    <p><strong>87% Data Quality Score</strong></p>
+                    
+                    <div class="stats-grid" style="margin-top: 20px;">
+                        <div class="stat-item">
+                            <div><strong>12,847</strong></div>
+                            <div>Labeled Samples</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>847</strong></div>
+                            <div>Pending Labels</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>156</strong></div>
+                            <div>Quality Issues</div>
+                        </div>
+                        <div class="stat-item">
+                            <div><strong>94.2%</strong></div>
+                            <div>Inter-Annotator Agreement</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Model Retraining Schedule</h3>
+                    <div class="suggestion-item">
+                        <h4>Next Scheduled Retraining</h4>
+                        <p><strong>Tomorrow 2:00 AM EST</strong></p>
+                        <p>Including 847 new feedback samples from the past week.</p>
+                    </div>
+                    <div class="suggestion-item">
+                        <h4>Auto-Trigger Conditions</h4>
+                        <p>• Model accuracy drops below 90%</p>
+                        <p>• 1000+ new labeled samples available</p>
+                        <p>• Data drift detected in transaction patterns</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Annotation Guidelines</h3>
+                    <div class="feedback-form">
+                        <h4>Key Factors to Consider:</h4>
+                        <ul style="margin: 15px 0; padding-left: 20px;">
+                            <li>Transaction amount relative to customer history</li>
+                            <li>Geographic location and travel patterns</li>
+                            <li>Time of transaction (unusual hours)</li>
+                            <li>Merchant category and reputation</li>
+                            <li>Payment method and card usage patterns</li>
+                        </ul>
+                        
+                        <div class="action-buttons">
+                            <button class="btn btn-review">📋 View Full Guidelines</button>
+                            <button class="btn btn-approve">📊 Training Progress</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+        }
+
+        function handleAlert(action, alertId) {
+            const alertCard = event.target.closest('.card');
+            const actionButtons = alertCard.querySelector('.action-buttons');
+            
+            // Create feedback message
+            let message = '';
+            let bgColor = '';
+            
+            switch(action) {
+                case 'approve':
+                    message = '✅ Transaction approved and marked as legitimate';
+                    bgColor = '#d4edda';
+                    break;
+                case 'reject':
+                    message = '❌ Transaction blocked and marked as fraud';
+                    bgColor = '#f8d7da';
+                    break;
+                case 'review':
+                    message = '👁 Alert flagged for additional review';
+                    bgColor = '#fff3cd';
+                    break;
+            }
+
+            // Replace buttons with feedback message
+            actionButtons.innerHTML = `
+                <div style="background: ${bgColor}; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold;">
+                    ${message}
+                    <br><small style="opacity: 0.8;">Feedback submitted for model retraining</small>
+                </div>
+            `;
+
+            // Simulate updating metrics
+            setTimeout(() => {
+                updateDashboardMetrics();
+            }, 1000);
+
+            // Log the action for demonstration
+            console.log(`Alert ${alertId} - Action: ${action}`);
+        }
+
+        function updateDashboardMetrics() {
+            // This would typically update from server data
+            const pendingElement = document.querySelector('.metric-value[style*="dc3545"]');
+            if (pendingElement) {
+                const currentValue = parseInt(pendingElement.textContent);
+                pendingElement.textContent = currentValue - 1;
+            }
+
+            const completedElement = document.querySelector('.metric-value[style*="17a2b8"]');
+            if (completedElement) {
+                const currentValue = parseInt(completedElement.textContent.replace(',', ''));
+                completedElement.textContent = (currentValue + 1).toLocaleString();
+            }
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const confidence = document.querySelector('.confidence-score');
+            if (confidence && Math.random() > 0.7) {
+                const newScore = (Math.random() * 20 + 80).toFixed(1);
+                confidence.textContent = `${newScore}% Fraud Risk`;
+            }
+        }, 2000);
+    </script>
+</body>
+</html
